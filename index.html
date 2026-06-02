@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Livin' Ledger - Custom Notification Edition</title>
+    <title>Livin' Ledger - Easy Multi User</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -21,63 +21,68 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-dark);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center;
         }
 
         .app-container {
-            width: 100%;
-            max-width: 480px; 
-            background-color: #ffffff;
-            min-height: 100vh;
-            box-sizing: border-box;
-            padding-bottom: 90px; 
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            width: 100%; max-width: 480px; 
+            background-color: #ffffff; min-height: 100vh;
+            box-sizing: border-box; padding-bottom: 90px; 
+            position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        .top-navbar {
-            background-color: var(--mandiri-blue);
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
+        /* Layar Login Simpel */
+        .activation-screen {
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; height: 100vh;
+            background: var(--mandiri-blue); color: white;
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; padding: 40px; box-sizing: border-box;
+            transition: all 0.5s ease;
         }
-        .top-navbar .greeting p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
+        .activation-screen.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -50px); }
+        .activation-header h2 { font-weight: 800; font-size: 2.2rem; color: var(--mandiri-gold); margin: 0 0 10px 0; }
+        .activation-header p { margin: 0 0 40px 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.5; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
+        .app-container .input-group label { color: var(--text-muted); }
+        
+        input, select {
+            width: 100%; padding: 14px; 
+            border: 1px solid #cbd5e1; border-radius: 10px;
+            background: #f8fafc; font-size: 0.95rem; color: var(--text-dark);
+            box-sizing: border-box; outline: none; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .activation-screen input { background: white; border: none; color: var(--text-dark); }
+
+        .btn-primary {
+            width: 100%; padding: 14px; background: var(--mandiri-gold);
+            color: var(--mandiri-blue); border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+        .btn-logout {
+            background: none; border: 1px solid #ef4444; color: #ef4444;
+            padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+        }
+
+        /* UI Utama Aplikasi */
+        .top-navbar {
+            background-color: var(--mandiri-blue); padding: 20px;
+            display: flex; justify-content: space-between; align-items: center; color: white;
+        }
         .top-navbar .greeting h3 { margin: 3px 0 0 0; font-size: 1.1rem; font-weight: 700; }
-        .top-navbar .logo { font-weight: 800; font-size: 1.2rem; color: var(--mandiri-gold); letter-spacing: -0.5px; }
 
         .rekening-card {
             background: linear-gradient(135deg, #003a80 0%, #00234d 100%);
-            margin: 20px;
-            padding: 25px;
-            border-radius: 16px;
-            color: white;
+            margin: 20px; padding: 25px; border-radius: 16px; color: white;
             box-shadow: 0 10px 20px rgba(0, 45, 98, 0.2);
-            position: relative;
-            overflow: hidden;
         }
-        .rekening-card::before {
-            content: ""; position: absolute; top: -50px; right: -50px;
-            width: 150px; height: 150px; background: rgba(253, 184, 19, 0.1);
-            border-radius: 50%; pointer-events: none;
-        }
-        .rekening-card .label { font-size: 0.85rem; opacity: 0.8; letter-spacing: 0.5px; }
-        .rekening-card .balance { font-size: 2rem; font-weight: 800; margin: 10px 0 20px 0; }
+        .rekening-card .balance { font-size: 2.1rem; font-weight: 800; margin: 10px 0 20px 0; }
         
-        .flow-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .flow-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-        }
+        .flow-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .flow-box { background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 10px; }
         .flow-box p { margin: 0; font-size: 0.75rem; opacity: 0.7; }
         .flow-box h4 { margin: 5px 0 0 0; font-size: 1rem; font-weight: 600; }
         .flow-box.in h4 { color: #4ade80; }
@@ -85,125 +90,77 @@
 
         .content-section { padding: 0 20px; }
         .section-title { font-size: 1rem; font-weight: 700; margin: 25px 0 15px 0; color: var(--mandiri-blue); }
-
-        .form-panel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-        }
-        .input-group { margin-bottom: 18px; }
-        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
-        
-        input, select {
-            width: 100%; padding: 12px 14px; 
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            background: #f8fafc;
-            font-size: 0.95rem; color: var(--text-dark); box-sizing: border-box; outline: none;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            transition: all 0.3s;
-        }
-        input:focus, select:focus { 
-            border-color: var(--mandiri-blue);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(0, 45, 98, 0.1);
-        }
+        .form-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; }
         
         .btn-submit {
-            width: 100%; padding: 14px; 
-            background: var(--mandiri-blue);
-            color: white; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 700; cursor: pointer;
-            transition: background 0.2s;
+            width: 100%; padding: 14px; background: var(--mandiri-blue);
+            color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
         }
-        .btn-submit:hover { background: #001f44; }
 
         .mutasi-list { display: flex; flex-direction: column; gap: 12px; }
         .mutasi-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #ffffff;
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #f1f5f9;
+            display: flex; justify-content: space-between; align-items: center;
+            background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #f1f5f9;
         }
         .mutasi-info h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }
         .mutasi-info p { margin: 0; color: var(--text-muted); font-size: 0.75rem; }
         .mutasi-amount { font-weight: 700; font-size: 0.95rem; text-align: right; }
         .mutasi-amount.income { color: var(--color-income); }
         .mutasi-amount.expense { color: var(--color-expense); }
-        
-        .btn-delete {
-            background: none; border: none; color: #ef4444; font-size: 0.75rem; 
-            cursor: pointer; padding: 0; margin-top: 6px; display: block; font-weight: 600;
-        }
+        .btn-delete { background: none; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; margin-top: 6px; font-weight: 600; padding: 0;}
 
-        /* Navigasi Bawah Baru: Sisa 2 Menu */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; max-width: 480px; height: 70px;
-            background: #ffffff; border-top: 1px solid #e2e8f0;
-            display: flex; justify-content: space-around; align-items: center; box-sizing: border-box; z-index: 100;
-        }
-        .nav-item { text-align: center; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; cursor: pointer; flex: 1; padding: 10px 0; }
-        .nav-item.active { color: var(--mandiri-blue); font-weight: 700; }
-        .nav-item .icon { font-size: 1.4rem; margin-bottom: 4px; display: block; }
-
-        /* Desain Struktur Custom Notification Popup */
+        /* Popup Notification */
         .popup-notification {
-            position: fixed;
-            top: -100px; /* Tersembunyi di awal atas layar */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 430px;
-            background: #ffffff;
-            border-left: 5px solid var(--mandiri-gold);
-            box-shadow: 0 15px 30px rgba(0, 45, 98, 0.15);
-            border-radius: 12px;
-            padding: 16px;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 430px; background: #ffffff; border-left: 5px solid var(--mandiri-gold);
+            box-shadow: 0 15px 30px rgba(0, 45, 98, 0.15); border-radius: 12px; padding: 16px; z-index: 99999;
+            display: flex; align-items: center; justify-content: space-between; transition: top 0.4s ease;
         }
         .popup-notification.show { top: 20px; }
-        .popup-content { display: flex; align-items: center; gap: 12px; }
-        .popup-icon { font-size: 1.5rem; background: #fffbeb; padding: 8px; border-radius: 50%; }
-        .popup-text h5 { margin: 0 0 2px 0; font-size: 0.9rem; font-weight: 700; color: var(--mandiri-blue); }
-        .popup-text p { margin: 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
-        .popup-close { background: none; border: none; color: #cbd5e1; font-size: 1.1rem; cursor: pointer; font-weight: 700; }
-        .popup-close:hover { color: var(--text-dark); }
+        .popup-text h5 { margin: 0 0 2px 0; font-size: 0.9rem; color: var(--mandiri-blue); }
+        .popup-text p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+        .popup-close { background: none; border: none; color: #cbd5e1; font-size: 1.2rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Wadah Komponen Notifikasi Pop-up -->
+    <!-- Layar Login Simpel -->
+    <div class="activation-screen" id="activationScreen">
+        <div class="activation-header">
+            <h2>Selamat Datang</h2>
+            <p>Masukkan Nama Pengguna Anda untuk mulai mencatat keuangan secara mandiri tanpa tercampur.</p>
+        </div>
+
+        <div class="input-group">
+            <label>Nama Pengguna / Panggilan (Tanpa Spasi)</label>
+            <input type="text" id="usernameInput" placeholder="Contoh: budi, roni, siska" required>
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">Masuk Ke Aplikasi</button>
+    </div>
+
+    <!-- Notifikasi Pop-up -->
     <div class="popup-notification" id="popupNotif">
-        <div class="popup-content">
-            <div class="popup-icon">🔔</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:1.5rem">🔔</div>
             <div class="popup-text">
-                <h5 id="popTitle">Transaksi Berhasil</h5>
-                <p id="popDesc">Catatan transaksi berhasil ditambahkan.</p>
+                <h5 id="popTitle">Sistem Berhasil</h5>
+                <p id="popDesc">Transaksi disimpan.</p>
             </div>
         </div>
         <button class="popup-close" onclick="closeNotification()">×</button>
     </div>
 
+    <!-- Aplikasi Utama -->
     <div class="app-container">
         <div class="top-navbar">
             <div class="greeting">
-                <p>Selamat Datang,</p>
-                <h3>Aldiilalang</h3>
+                <h3 id="userGreeting">Hai, Nasabah</h3>
             </div>
-            <div class="logo"></div>
+            <button class="btn-logout" onclick="handleLogout()">Ganti Akun</button>
         </div>
 
         <div class="rekening-card">
-            <div class="label">Tabungan Utama (IDR)</div>
+            <div style="font-size:0.85rem; opacity:0.8;">Tabungan Utama (IDR)</div>
             <div class="balance" id="totalBalance">Rp 0</div>
             
             <div class="flow-grid">
@@ -219,7 +176,7 @@
         </div>
 
         <div class="content-section">
-            <div class="section-title">Menu Transfer & Instan</div>
+            <div class="section-title">Menu Transaksi</div>
             <div class="form-panel">
                 <div class="input-group">
                     <label>Jenis Mutasi</label>
@@ -229,18 +186,18 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Kategori Rekening Tujuan</label>
+                    <label>Kategori</label>
                     <select id="category"></select>
                 </div>
                 <div class="input-group">
-                    <label>Jumlah Transfer (Nominal)</label>
-                    <input type="number" id="amount" placeholder="Masukkan nominal" required>
+                    <label>Jumlah (Rupiah)</label>
+                    <input type="number" id="amount" placeholder="Masukkan nominal Rp" required>
                 </div>
                 <div class="input-group">
-                    <label>Catatan / Berita Transfer</label>
-                    <input type="text" id="note" placeholder="Contoh: Bayar Kosan">
+                    <label>Catatan / Keterangan</label>
+                    <input type="text" id="note" placeholder="Contoh: Beli makan siang">
                 </div>
-                <button class="btn-submit" onclick="addTransaction()">Konfirmasi Transaksi</button>
+                <button class="btn-submit" onclick="addTransaction()">Simpan Transaksi</button>
             </div>
         </div>
 
@@ -248,22 +205,14 @@
             <div class="section-title">Mutasi Rekening Terbaru</div>
             <div class="mutasi-list" id="transactionList"></div>
         </div>
-
-        <!-- Menu Navigasi Sisa Dua: Beranda dan Notifikasi -->
-        <div class="bottom-nav">
-            <div class="nav-item active" id="navBeranda" onclick="switchMenu('beranda')">
-                <span class="icon">🏠</span>Beranda
-            </div>
-            <div class="nav-item" id="navNotif" onclick="switchMenu('notif')">
-                <span class="icon">🔔</span>Notifikasi
-            </div>
-        </div>
     </div>
 
     <script>
-        const googleSheetsUrl = "https://script.google.com/macros/s/AKfycbyJgueiNRhLV7vYBhbg12HfCso8Yv4JGK72LuufZJDwwptEqV7NTSonAfu4lwdWUeup2w/exec";
+        // Menggunakan URL Web App Google Script Anda secara langsung
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz_BA5uAcADYinDhAchjAMMav1iwBSqGG94SjmQ-m7gDtbetu1n1rZv79VdrzdzaEg0yw/exec";
 
-        let transactions = JSON.parse(localStorage.getItem('keuangan_sheets_data')) || [];
+        let currentUsername = localStorage.getItem('app_username') || "";
+        let transactions = JSON.parse(localStorage.getItem('keuangan_data_' + currentUsername)) || [];
 
         const categories = {
             pengeluaran: ["Makanan & Minuman", "Transportasi", "Belanja", "Tagihan Bulanan", "Hiburan", "Lain-lain"],
@@ -274,51 +223,61 @@
             return "Rp " + new Intl.NumberFormat('id-ID').format(angka);
         };
 
+        function checkLogin() {
+            const screen = document.getElementById('activationScreen');
+            if (currentUsername) {
+                screen.classList.add('hidden');
+                document.getElementById('userGreeting').innerText = "Hai, " + currentUsername.toUpperCase();
+                transactions = JSON.parse(localStorage.getItem('keuangan_data_' + currentUsername)) || [];
+            } else {
+                screen.classList.remove('hidden');
+            }
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('usernameInput').value.trim().replace(/\s+/g, '').toLowerCase();
+            if(!user) {
+                alert("Masukkan nama Anda terlebih dahulu.");
+                return;
+            }
+            localStorage.setItem('app_username', user);
+            currentUsername = user;
+            checkLogin();
+            updateUI();
+            showNotification("Berhasil Masuk", "Selamat datang di ruang pencatatan Anda, " + user);
+        }
+
+        function handleLogout() {
+            if(confirm("Apakah Anda ingin ganti akun atau keluar?")) {
+                localStorage.removeItem('app_username');
+                currentUsername = "";
+                checkLogin();
+                updateUI();
+            }
+        }
+
         function updateCategories() {
             const type = document.getElementById('type').value;
             const categorySelect = document.getElementById('category');
             categorySelect.innerHTML = '';
-            
             categories[type].forEach(cat => {
                 let option = document.createElement('option');
-                option.value = cat;
-                option.text = cat;
+                option.value = cat; option.text = cat;
                 categorySelect.appendChild(option);
             });
         }
 
-        // Fungsi pemicu Pop-up Notifikasi Kustom Keren
         let notifTimeout;
         function showNotification(title, message) {
             const popNotif = document.getElementById('popupNotif');
             document.getElementById('popTitle').innerText = title;
             document.getElementById('popDesc').innerText = message;
-            
             popNotif.classList.add('show');
-
-            // Hapus otomatis dalam waktu 5 detik
             clearTimeout(notifTimeout);
-            notifTimeout = setTimeout(() => {
-                closeNotification();
-            }, 5000);
+            notifTimeout = setTimeout(() => { closeNotification(); }, 4000);
         }
 
-        function closeNotification() {
-            document.getElementById('popupNotif').classList.remove('show');
-        }
-
-        function switchMenu(menu) {
-            document.getElementById('navBeranda').classList.remove('active');
-            document.getElementById('navNotif').classList.remove('active');
-
-            if(menu === 'beranda') {
-                document.getElementById('navBeranda').classList.add('active');
-            } else {
-                document.getElementById('navNotif').classList.add('active');
-                // Picu notifikasi saat menu notifikasi diklik sebagai feedback
-                showNotification("Pusat Notifikasi", "Seluruh log aktivitas mutasi cloud Anda berjalan normal.");
-            }
-        }
+        function closeNotification() { document.getElementById('popupNotif').classList.remove('show'); }
 
         function addTransaction() {
             const type = document.getElementById('type').value;
@@ -328,72 +287,52 @@
             const date = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
 
             if (!amount || amount <= 0) {
-                alert("Harap isi nominal transaksi dengan benar.");
+                alert("Harap masukkan nominal rupiah yang benar.");
                 return;
             }
 
             const newTx = { id: Date.now(), type, category, amount, note, date };
 
-            // Kirim Data Baru (POST) ke Sheets
-            fetch(googleSheetsUrl, {
+            // Kirim ke backend dengan membawa nama pengguna (username)
+            fetch(BACKEND_URL, {
                 method: "POST",
-                body: JSON.stringify({...newTx, action: "INSERT"}),
+                body: JSON.stringify({...newTx, username: currentUsername, action: "INSERT"}),
                 mode: "no-cors"
-            })
-            .then(() => console.log("Mutasi berhasil dicatat ke sistem cloud."))
-            .catch(err => console.error("Koneksi cloud terputus:", err));
+            }).catch(err => console.error("Cloud Error:", err));
 
             transactions.unshift(newTx);
-            saveData();
+            localStorage.setItem('keuangan_data_' + currentUsername, JSON.stringify(transactions));
             updateUI();
             
-            // Picu fungsi notifikasi pop-up sesuai deskripsi isi catatan input-an pengguna
-            const typeText = type === 'pemasukan' ? 'Dana Masuk' : 'Dana Keluar';
-            const infoCatatan = note ? `(${note})` : '';
-            showNotification(
-                `Berhasil Berubah! [${typeText}]`, 
-                `Kategori ${category} senilai ${formatRupiah(amount)} telah dicatat ${infoCatatan}.`
-            );
-
+            showNotification(`Sukses!`, `Transaksi sebesar ${formatRupiah(amount)} berhasil disimpan.`);
             document.getElementById('amount').value = '';
             document.getElementById('note').value = '';
         }
 
         function deleteTransaction(id) {
-            if(confirm("Hapus catatan mutasi ini secara permanen dari HP dan Google Sheets?")) {
+            if(confirm("Hapus transaksi ini?")) {
                 const txToDelete = transactions.find(tx => tx.id === id);
-                
                 if (txToDelete) {
-                    fetch(googleSheetsUrl, {
+                    fetch(BACKEND_URL, {
                         method: "POST",
                         body: JSON.stringify({
                             action: "DELETE",
-                            id: txToDelete.id,
-                            date: txToDelete.date,
-                            category: txToDelete.category,
-                            amount: txToDelete.amount
+                            username: currentUsername,
+                            id: txToDelete.id
                         }),
                         mode: "no-cors"
-                    })
-                    .then(() => console.log("Permintaan hapus dikirim ke Google Sheets."))
-                    .catch(err => console.error("Gagal terhubung ke Sheets:", err));
+                    }).catch(err => console.error("Cloud Error:", err));
                 }
 
                 transactions = transactions.filter(tx => tx.id !== id);
-                saveData();
+                localStorage.setItem('keuangan_data_' + currentUsername, JSON.stringify(transactions));
                 updateUI();
-                
-                showNotification("Mutasi Dihapus", "Catatan transaksi berhasil dibersihkan dari server.");
+                showNotification("Terhapus", "Data mutasi telah dibersihkan.");
             }
         }
 
-        function saveData() {
-            localStorage.setItem('keuangan_sheets_data', JSON.stringify(transactions));
-        }
-
         function updateUI() {
-            let totalIn = 0;
-            let totalOut = 0;
+            let totalIn = 0; let totalOut = 0;
             const listContainer = document.getElementById('transactionList');
             listContainer.innerHTML = '';
 
@@ -430,6 +369,7 @@
             document.getElementById('totalExpense').innerText = formatRupiah(totalOut);
         }
 
+        checkLogin();
         updateCategories();
         updateUI();
     </script>
