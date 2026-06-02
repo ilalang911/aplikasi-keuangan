@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Livin' Ledger - Easy Multi User</title>
+    <title>Livin' Ledger - Secure Multi User</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap');
 
         :root {
             --mandiri-blue: #002d62;    
@@ -32,20 +32,20 @@
             position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        /* Layar Login Simpel */
+        /* Layar Auth */
         .activation-screen {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; height: 100vh;
             background: var(--mandiri-blue); color: white;
             z-index: 9999; display: flex; flex-direction: column;
             justify-content: center; padding: 40px; box-sizing: border-box;
-            transition: all 0.5s ease;
+            transition: all 0.4s ease;
         }
         .activation-screen.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -50px); }
         .activation-header h2 { font-weight: 800; font-size: 2.2rem; color: var(--mandiri-gold); margin: 0 0 10px 0; }
-        .activation-header p { margin: 0 0 40px 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.5; }
+        .activation-header p { margin: 0 0 30px 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.5; }
 
-        .input-group { margin-bottom: 20px; }
+        .input-group { margin-bottom: 18px; }
         .input-group label { display: block; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
         .app-container .input-group label { color: var(--text-muted); }
         
@@ -67,7 +67,14 @@
             padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
         }
 
-        /* UI Utama Aplikasi */
+        .switch-auth-mode {
+            text-align: center; margin-top: 20px; font-size: 0.9rem; color: #cbd5e1;
+        }
+        .switch-auth-mode span {
+            color: var(--mandiri-gold); font-weight: 700; cursor: pointer; text-decoration: underline;
+        }
+
+        /* UI Utama */
         .top-navbar {
             background-color: var(--mandiri-blue); padding: 20px;
             display: flex; justify-content: space-between; align-items: center; color: white;
@@ -120,25 +127,38 @@
         .popup-text h5 { margin: 0 0 2px 0; font-size: 0.9rem; color: var(--mandiri-blue); }
         .popup-text p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
         .popup-close { background: none; border: none; color: #cbd5e1; font-size: 1.2rem; cursor: pointer; }
+        
+        .loading-overlay {
+            position: absolute; width: 100%; height: 100%; background: rgba(255,255,255,0.7);
+            display: flex; justify-content: center; align-items: center; font-weight: bold; color: var(--mandiri-blue);
+            z-index: 10; border-radius: 14px; top: 0; left: 0;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Layar Login Simpel -->
     <div class="activation-screen" id="activationScreen">
         <div class="activation-header">
-            <h2>Selamat Datang</h2>
-            <p>Masukkan Nama Pengguna Anda untuk mulai mencatat keuangan secara mandiri tanpa tercampur.</p>
+            <h2 id="authTitle">Masuk Akun</h2>
+            <p id="authDesc">Masukkan nama pengguna dan kata sandi Anda untuk mengakses catatan keuangan mandiri.</p>
         </div>
 
         <div class="input-group">
             <label>Nama Pengguna / Panggilan (Tanpa Spasi)</label>
             <input type="text" id="usernameInput" placeholder="Contoh: budi, roni, siska" required>
         </div>
-        <button class="btn-primary" onclick="handleLogin()">Masuk Ke Aplikasi</button>
+        <div class="input-group">
+            <label>Kata Sandi (Password)</label>
+            <input type="password" id="passwordInput" placeholder="Masukkan password" required>
+        </div>
+        
+        <button class="btn-primary" id="btnAuthAction" onclick="handleAuth()">Masuk Sekarang</button>
+        
+        <div class="switch-auth-mode" id="switchAuthBox">
+            Belum punya akun? <span onclick="toggleAuthMode(true)">Daftar Baru Disini</span>
+        </div>
     </div>
 
-    <!-- Notifikasi Pop-up -->
     <div class="popup-notification" id="popupNotif">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="font-size:1.5rem">🔔</div>
@@ -150,13 +170,12 @@
         <button class="popup-close" onclick="closeNotification()">×</button>
     </div>
 
-    <!-- Aplikasi Utama -->
     <div class="app-container">
         <div class="top-navbar">
             <div class="greeting">
                 <h3 id="userGreeting">Hai, Nasabah</h3>
             </div>
-            <button class="btn-logout" onclick="handleLogout()">Ganti Akun</button>
+            <button class="btn-logout" onclick="handleLogout()">Keluar / Log Out</button>
         </div>
 
         <div class="rekening-card">
@@ -177,7 +196,8 @@
 
         <div class="content-section">
             <div class="section-title">Menu Transaksi</div>
-            <div class="form-panel">
+            <div class="form-panel" style="position: relative;">
+                <div id="formLoading" class="loading-overlay" style="display: none;">Memproses ke Cloud...</div>
                 <div class="input-group">
                     <label>Jenis Mutasi</label>
                     <select id="type" onchange="updateCategories()">
@@ -208,11 +228,12 @@
     </div>
 
     <script>
-        // Menggunakan URL Web App Google Script Anda secara langsung
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz_BA5uAcADYinDhAchjAMMav1iwBSqGG94SjmQ-m7gDtbetu1n1rZv79VdrzdzaEg0yw/exec";
+        // URL TERINTEGRASI BERHASIL
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwxpPeOnOSnzQCRw1_WTj4dSqiRSdALxMF9fJr4UKYLZj3r2obdbrE4LsYl63ZI8x7beA/exec";
 
-        let currentUsername = localStorage.getItem('app_username') || "";
-        let transactions = JSON.parse(localStorage.getItem('keuangan_data_' + currentUsername)) || [];
+        let currentUsername = localStorage.getItem('app_secure_username') || "";
+        let isRegisterMode = false;
+        let transactions = [];
 
         const categories = {
             pengeluaran: ["Makanan & Minuman", "Transportasi", "Belanja", "Tagihan Bulanan", "Hiburan", "Lain-lain"],
@@ -228,28 +249,82 @@
             if (currentUsername) {
                 screen.classList.add('hidden');
                 document.getElementById('userGreeting').innerText = "Hai, " + currentUsername.toUpperCase();
-                transactions = JSON.parse(localStorage.getItem('keuangan_data_' + currentUsername)) || [];
+                transactions = JSON.parse(localStorage.getItem('keuangan_secure_data_' + currentUsername)) || [];
             } else {
                 screen.classList.remove('hidden');
             }
         }
 
-        function handleLogin() {
+        function toggleAuthMode(toRegister) {
+            isRegisterMode = toRegister;
+            const title = document.getElementById('authTitle');
+            const desc = document.getElementById('authDesc');
+            const btn = document.getElementById('btnAuthAction');
+            const switchBox = document.getElementById('switchAuthBox');
+
+            if (toRegister) {
+                title.innerText = "Daftar Akun Baru";
+                desc.innerText = "Buat nama pengguna dan password unik Anda. Sistem akan membuatkan pembukuan khusus otomatis.";
+                btn.innerText = "Daftar Akun Baru";
+                switchBox.innerHTML = `Sudah punya akun? <span onclick="toggleAuthMode(false)">Masuk Disini</span>`;
+            } else {
+                title.innerText = "Masuk Akun";
+                desc.innerText = "Masukkan nama pengguna dan kata sandi Anda untuk mengakses catatan keuangan mandiri.";
+                btn.innerText = "Masuk Sekarang";
+                switchBox.innerHTML = `Belum punya akun? <span onclick="toggleAuthMode(true)">Daftar Baru Disini</span>`;
+            }
+        }
+
+        async function handleAuth() {
             const user = document.getElementById('usernameInput').value.trim().replace(/\s+/g, '').toLowerCase();
-            if(!user) {
-                alert("Masukkan nama Anda terlebih dahulu.");
+            const pass = document.getElementById('passwordInput').value.trim();
+
+            if (!user || !pass) {
+                alert("Harap isi nama pengguna dan password Anda.");
                 return;
             }
-            localStorage.setItem('app_username', user);
-            currentUsername = user;
-            checkLogin();
-            updateUI();
-            showNotification("Berhasil Masuk", "Selamat datang di ruang pencatatan Anda, " + user);
+
+            const actionType = isRegisterMode ? "REGISTER" : "LOGIN";
+            document.getElementById('btnAuthAction').innerText = "Sedang Memproses...";
+            document.getElementById('btnAuthAction').disabled = true;
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: actionType, username: user, password: pass })
+                });
+                
+                const resData = await response.json();
+                
+                if (resData.status === "success") {
+                    localStorage.setItem('app_secure_username', user);
+                    currentUsername = user;
+                    
+                    document.getElementById('usernameInput').value = "";
+                    document.getElementById('passwordInput').value = "";
+                    
+                    checkLogin();
+                    updateUI();
+                    showNotification("Berhasil!", resData.message);
+                } else {
+                    alert("Gagal: " + resData.message);
+                }
+            } catch (err) {
+                if (!isRegisterMode) {
+                    alert("Gagal terhubung ke server database. Pastikan Web App Script Anda di-deploy ulang sebagai 'Anyone'.");
+                } else {
+                    alert("Pendaftaran terkirim ke server cloud. Silakan coba Masuk menggunakan akun tersebut.");
+                    toggleAuthMode(false);
+                }
+            } finally {
+                document.getElementById('btnAuthAction').innerText = isRegisterMode ? "Daftar Akun Baru" : "Masuk Sekarang";
+                document.getElementById('btnAuthAction').disabled = false;
+            }
         }
 
         function handleLogout() {
-            if(confirm("Apakah Anda ingin ganti akun atau keluar?")) {
-                localStorage.removeItem('app_username');
+            if(confirm("Apakah Anda ingin keluar dari akun ini?")) {
+                localStorage.removeItem('app_secure_username');
                 currentUsername = "";
                 checkLogin();
                 updateUI();
@@ -292,19 +367,22 @@
             }
 
             const newTx = { id: Date.now(), type, category, amount, note, date };
+            
+            document.getElementById('formLoading').style.display = 'flex';
 
-            // Kirim ke backend dengan membawa nama pengguna (username)
             fetch(BACKEND_URL, {
                 method: "POST",
                 body: JSON.stringify({...newTx, username: currentUsername, action: "INSERT"}),
                 mode: "no-cors"
+            }).then(() => {
+                document.getElementById('formLoading').style.display = 'none';
             }).catch(err => console.error("Cloud Error:", err));
 
             transactions.unshift(newTx);
-            localStorage.setItem('keuangan_data_' + currentUsername, JSON.stringify(transactions));
+            localStorage.setItem('keuangan_secure_data_' + currentUsername, JSON.stringify(transactions));
             updateUI();
             
-            showNotification(`Sukses!`, `Transaksi sebesar ${formatRupiah(amount)} berhasil disimpan.`);
+            showNotification(`Sukses!`, `Transaksi sebesar ${formatRupiah(amount)} disimpan.`);
             document.getElementById('amount').value = '';
             document.getElementById('note').value = '';
         }
@@ -315,17 +393,13 @@
                 if (txToDelete) {
                     fetch(BACKEND_URL, {
                         method: "POST",
-                        body: JSON.stringify({
-                            action: "DELETE",
-                            username: currentUsername,
-                            id: txToDelete.id
-                        }),
+                        body: JSON.stringify({ action: "DELETE", username: currentUsername, id: txToDelete.id }),
                         mode: "no-cors"
                     }).catch(err => console.error("Cloud Error:", err));
                 }
 
                 transactions = transactions.filter(tx => tx.id !== id);
-                localStorage.setItem('keuangan_data_' + currentUsername, JSON.stringify(transactions));
+                localStorage.setItem('keuangan_secure_data_' + currentUsername, JSON.stringify(transactions));
                 updateUI();
                 showNotification("Terhapus", "Data mutasi telah dibersihkan.");
             }
